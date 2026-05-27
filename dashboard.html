@@ -550,7 +550,7 @@
       weight:       inputs[4].value
     };
 
-    const response = await fetch('http://127.0.0.1:5000/log', {
+    const response = await fetch('/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -583,7 +583,7 @@
 
   async function loadReadings() {
     try {
-      const response = await fetch('http://127.0.0.1:5000/readings/' + userId);
+      const response = await fetch('/readings/' + userId);
       const readings = await response.json();
       allReadings = readings;
 
