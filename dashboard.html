@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard - Care 365</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     .dashboard-page {
       min-height: 100vh;
@@ -141,19 +142,65 @@
       font-weight: 700;
     }
 
-    .status-normal {
-      background: #e8f5e9;
-      color: #2e7d32;
+    .status-normal { background: #e8f5e9; color: #2e7d32; }
+    .status-low    { background: #fff3e0; color: #e65100; }
+    .status-high   { background: #fce4ec; color: #c62828; }
+
+    /* CHARTS SECTION */
+    .charts-section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      border: 1px solid #d0ecf8;
+      margin-bottom: 30px;
     }
 
-    .status-low {
-      background: #fff3e0;
-      color: #e65100;
+    .charts-section h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
     }
 
-    .status-high {
-      background: #fce4ec;
-      color: #c62828;
+    .charts-section .charts-sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .chart-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .chart-tab {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1.5px solid #d0ecf8;
+      background: #fff;
+      color: #555;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chart-tab.active {
+      background: #0077b6;
+      color: #fff;
+      border-color: #0077b6;
+    }
+
+    .chart-tab:hover:not(.active) {
+      border-color: #0077b6;
+      color: #0077b6;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
     }
 
     /* LOG SECTION */
@@ -241,9 +288,7 @@
       font-size: 14px;
     }
 
-    thead tr {
-      background: #f0f9ff;
-    }
+    thead tr { background: #f0f9ff; }
 
     thead th {
       padding: 12px 15px;
@@ -253,17 +298,20 @@
       font-size: 13px;
     }
 
-    tbody tr {
-      border-top: 1px solid #f0f0f0;
-    }
+    tbody tr { border-top: 1px solid #f0f0f0; }
 
     tbody td {
       padding: 12px 15px;
       color: #333;
     }
 
-    tbody tr:hover {
-      background: #f8fbff;
+    tbody tr:hover { background: #f8fbff; }
+
+    .no-data {
+      text-align: center;
+      color: #aaa;
+      padding: 40px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -275,8 +323,8 @@
     <nav class="dash-nav">
       <div class="dash-logo">Care<span>365</span></div>
       <div class="dash-user">
-        <p>Hello, <strong>Olaoluwa</strong></p>
-        <div class="avatar">OA</div>
+        <p>Hello, <strong>User</strong></p>
+        <div class="avatar">U</div>
         <button class="logout-btn">Log Out</button>
       </div>
     </nav>
@@ -284,44 +332,63 @@
     <!-- MAIN BODY -->
     <div class="dash-body">
       <h1>Your Health Dashboard</h1>
-      <p class="welcome-sub">Last updated: Today, May 26 2026</p>
+      <p class="welcome-sub" id="last-updated">Last updated: —</p>
 
       <!-- METRIC CARDS -->
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-icon">⚡</div>
           <div class="metric-label">Testosterone</div>
-          <div class="metric-value">520</div>
+          <div class="metric-value">—</div>
           <div class="metric-unit">ng/dL</div>
-          <span class="metric-status status-normal">Normal</span>
+          <span class="metric-status status-normal">—</span>
         </div>
         <div class="metric-card">
           <div class="metric-icon">🌸</div>
           <div class="metric-label">Estrogen</div>
-          <div class="metric-value">28</div>
+          <div class="metric-value">—</div>
           <div class="metric-unit">pg/mL</div>
-          <span class="metric-status status-normal">Normal</span>
+          <span class="metric-status status-normal">—</span>
         </div>
         <div class="metric-card">
           <div class="metric-icon">🩸</div>
           <div class="metric-label">Blood Sugar</div>
-          <div class="metric-value">105</div>
+          <div class="metric-value">—</div>
           <div class="metric-unit">mg/dL</div>
-          <span class="metric-status status-low">Watch</span>
+          <span class="metric-status status-normal">—</span>
         </div>
         <div class="metric-card">
-          <div class="metric-icon">❤️</div>
+          <div class="metric-icon">❤</div>
           <div class="metric-label">Cholesterol</div>
-          <div class="metric-value">190</div>
+          <div class="metric-value">—</div>
           <div class="metric-unit">mg/dL</div>
-          <span class="metric-status status-normal">Normal</span>
+          <span class="metric-status status-normal">—</span>
         </div>
         <div class="metric-card">
           <div class="metric-icon">⚖️</div>
           <div class="metric-label">Body Weight</div>
-          <div class="metric-value">78</div>
+          <div class="metric-value">—</div>
           <div class="metric-unit">kg</div>
-          <span class="metric-status status-normal">Normal</span>
+          <span class="metric-status status-normal">—</span>
+        </div>
+      </div>
+
+      <!-- TREND CHARTS -->
+      <div class="charts-section">
+        <h2>📈 Health Trends</h2>
+        <p class="charts-sub">Track how your metrics change over time</p>
+
+        <div class="chart-tabs">
+          <button class="chart-tab active" data-metric="all">All Metrics</button>
+          <button class="chart-tab" data-metric="testosterone">Testosterone</button>
+          <button class="chart-tab" data-metric="estrogen">Estrogen</button>
+          <button class="chart-tab" data-metric="blood_sugar">Blood Sugar</button>
+          <button class="chart-tab" data-metric="cholesterol">Cholesterol</button>
+          <button class="chart-tab" data-metric="weight">Weight</button>
+        </div>
+
+        <div class="chart-wrapper">
+          <canvas id="healthChart"></canvas>
         </div>
       </div>
 
@@ -368,45 +435,109 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>May 26, 2026</td>
-              <td>520 ng/dL</td>
-              <td>28 pg/mL</td>
-              <td>105 mg/dL</td>
-              <td>190 mg/dL</td>
-              <td>78 kg</td>
-            </tr>
-            <tr>
-              <td>May 19, 2026</td>
-              <td>510 ng/dL</td>
-              <td>27 pg/mL</td>
-              <td>98 mg/dL</td>
-              <td>188 mg/dL</td>
-              <td>79 kg</td>
-            </tr>
-            <tr>
-              <td>May 12, 2026</td>
-              <td>498 ng/dL</td>
-              <td>30 pg/mL</td>
-              <td>102 mg/dL</td>
-              <td>195 mg/dL</td>
-              <td>80 kg</td>
-            </tr>
+            <tr><td colspan="6" class="no-data">Loading readings...</td></tr>
           </tbody>
         </table>
       </div>
 
     </div>
   </div>
+
 <script>
-  // Load user name
+  // ── User info ──────────────────────────────────────────────
   const userName = localStorage.getItem('user_name');
-  const userId = localStorage.getItem('user_id');
+  const userId   = localStorage.getItem('user_id');
+
   if (userName) {
     document.querySelector('.dash-user p').innerHTML = 'Hello, <strong>' + userName + '</strong>';
+    const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+    document.querySelector('.avatar').textContent = initials;
   }
 
-  // Save reading
+  // ── Chart setup ────────────────────────────────────────────
+  const ctx = document.getElementById('healthChart').getContext('2d');
+
+  const COLORS = {
+    testosterone: { border: '#0077b6', bg: 'rgba(0,119,182,0.1)' },
+    estrogen:     { border: '#e91e8c', bg: 'rgba(233,30,140,0.1)' },
+    blood_sugar:  { border: '#f4511e', bg: 'rgba(244,81,30,0.1)'  },
+    cholesterol:  { border: '#fb8c00', bg: 'rgba(251,140,0,0.1)'  },
+    weight:       { border: '#43a047', bg: 'rgba(67,160,71,0.1)'  },
+  };
+
+  const LABELS = {
+    testosterone: 'Testosterone (ng/dL)',
+    estrogen:     'Estrogen (pg/mL)',
+    blood_sugar:  'Blood Sugar (mg/dL)',
+    cholesterol:  'Cholesterol (mg/dL)',
+    weight:       'Weight (kg)',
+  };
+
+  let allReadings = [];
+  let activeMetric = 'all';
+
+  const healthChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { usePointStyle: true, padding: 20, font: { size: 12 } }
+        },
+        tooltip: { padding: 12, cornerRadius: 8 }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { size: 12 }, color: '#888' }
+        },
+        y: {
+          grid: { color: '#f0f0f0' },
+          ticks: { font: { size: 12 }, color: '#888' }
+        }
+      },
+      elements: {
+        line: { tension: 0.4, borderWidth: 2.5 },
+        point: { radius: 4, hoverRadius: 6 }
+      }
+    }
+  });
+
+  function buildDatasets(readings, metric) {
+    const labels = readings.map(r => r.date).reverse();
+    const metrics = metric === 'all'
+      ? ['testosterone','estrogen','blood_sugar','cholesterol','weight']
+      : [metric];
+
+    const datasets = metrics.map(m => ({
+      label: LABELS[m],
+      data: readings.map(r => parseFloat(r[m])).reverse(),
+      borderColor: COLORS[m].border,
+      backgroundColor: COLORS[m].bg,
+      fill: metric !== 'all',
+      pointBackgroundColor: COLORS[m].border,
+    }));
+
+    healthChart.data.labels = labels;
+    healthChart.data.datasets = datasets;
+    healthChart.update();
+  }
+
+  // ── Tab switching ──────────────────────────────────────────
+  document.querySelectorAll('.chart-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeMetric = tab.dataset.metric;
+      buildDatasets(allReadings, activeMetric);
+    });
+  });
+
+  // ── Save reading ───────────────────────────────────────────
   document.querySelector('.log-btn').addEventListener('click', async () => {
     const inputs = document.querySelectorAll('.log-group input');
     const data = {
@@ -425,56 +556,88 @@
       body: JSON.stringify(data)
     });
 
-    const result = await response.json();
-
     if (response.ok) {
       alert('Reading saved successfully!');
+      inputs.forEach(i => i.value = '');
       loadReadings();
     } else {
       alert('Error saving reading.');
     }
   });
 
-  // Load readings into table
+  // ── Load readings ──────────────────────────────────────────
+  function getStatus(metric, value) {
+    const v = parseFloat(value);
+    const ranges = {
+      testosterone: [300, 1000],
+      estrogen:     [10,  40],
+      blood_sugar:  [70,  99],
+      cholesterol:  [0,   200],
+      weight:       [0,   999],
+    };
+    const [low, high] = ranges[metric] || [0, 9999];
+    if (v < low)  return ['status-low',  'Low'];
+    if (v > high) return ['status-high', 'High'];
+    return ['status-normal', 'Normal'];
+  }
+
   async function loadReadings() {
-    const response = await fetch('http://127.0.0.1:5000/readings/' + userId);
-    const readings = await response.json();
+    try {
+      const response = await fetch('http://127.0.0.1:5000/readings/' + userId);
+      const readings = await response.json();
+      allReadings = readings;
 
-    const tbody = document.querySelector('tbody');
-    tbody.innerHTML = '';
+      // Update table
+      const tbody = document.querySelector('tbody');
+      if (readings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No readings yet. Log your first reading above!</td></tr>';
+      } else {
+        tbody.innerHTML = '';
+        readings.forEach(r => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${r.date}</td>
+              <td>${r.testosterone} ng/dL</td>
+              <td>${r.estrogen} pg/mL</td>
+              <td>${r.blood_sugar} mg/dL</td>
+              <td>${r.cholesterol} mg/dL</td>
+              <td>${r.weight} kg</td>
+            </tr>`;
+        });
+      }
 
-    readings.forEach(r => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.date}</td>
-          <td>${r.testosterone} ng/dL</td>
-          <td>${r.estrogen} pg/mL</td>
-          <td>${r.blood_sugar} mg/dL</td>
-          <td>${r.cholesterol} mg/dL</td>
-          <td>${r.weight} kg</td>
-        </tr>
-      `;
-    });
+      // Update metric cards
+      if (readings.length > 0) {
+        const latest = readings[0];
+        const values  = document.querySelectorAll('.metric-value');
+        const statuses = document.querySelectorAll('.metric-status');
+        const keys = ['testosterone','estrogen','blood_sugar','cholesterol','weight'];
 
-    // Update metric cards with latest reading
-    if (readings.length > 0) {
-      const latest = readings[0];
-      const values = document.querySelectorAll('.metric-value');
-      values[0].textContent = latest.testosterone;
-      values[1].textContent = latest.estrogen;
-      values[2].textContent = latest.blood_sugar;
-      values[3].textContent = latest.cholesterol;
-      values[4].textContent = latest.weight;
+        keys.forEach((key, i) => {
+          values[i].textContent = latest[key];
+          const [cls, label] = getStatus(key, latest[key]);
+          statuses[i].className = 'metric-status ' + cls;
+          statuses[i].textContent = label;
+        });
+
+        document.getElementById('last-updated').textContent = 'Last updated: ' + latest.date;
+      }
+
+      // Update chart
+      if (readings.length > 0) buildDatasets(readings, activeMetric);
+
+    } catch (err) {
+      console.error('Could not load readings:', err);
     }
   }
 
-  // Logout
+  // ── Logout ─────────────────────────────────────────────────
   document.querySelector('.logout-btn').addEventListener('click', () => {
     localStorage.clear();
     window.location.href = 'login.html';
   });
 
-  // Load on page start
+  // ── Init ───────────────────────────────────────────────────
   loadReadings();
 </script>
 </body>
