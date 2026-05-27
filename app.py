@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import hashlib
@@ -8,7 +8,13 @@ import os
 app = Flask(__name__)
 app.secret_key = "care365secretkey"
 CORS(app)
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
 
+@app.route('/<path:filename>')
+def serve_file(filename):
+    return send_from_directory('.', filename)
 # DATABASE SETUP
 def get_db():
     conn = sqlite3.connect("care365.db")
